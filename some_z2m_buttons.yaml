@@ -1,0 +1,183 @@
+blueprint:
+
+  name: Various Zigbee Wireless Switch
+  description:
+    Supported Device - (confirmed working)
+    
+      Tuya - [TS0044](https://www.zigbee2mqtt.io/devices/TS0044.html)
+
+      Sihas - Wireless 4gang - [SBM300ZC4](https://www.zigbee2mqtt.io/devices/SBM300ZC4.html#shinasystem-sbm300zc4)
+      
+      Aqara - Wireless remote switch T1 (double rocker) - [WXKG04LM](https://www.zigbee2mqtt.io/devices/WXKG04LM.html#aqara-wxkg04lm)
+      / Wireless mini switch t1 - [WXKG13LM](https://www.zigbee2mqtt.io/devices/WXKG13LM.html#aqara-wxkg13lm)
+          
+    
+      User Manual
+      
+      1. Ensure all wireless switches are connected to zigbee2mqtt.
+      
+      2. Select the sensor with the entity ID = sensor.[THE NAME OF THE DEVICE YOU PAIRED]_action; from the dropdown for your desired switch device.
+      
+      3. Create automation actions. Done!
+      
+
+       NOTE!
+       
+        * The RELEASE action of all buttons DOES NOT WORK
+        
+        * The actions of AQARA MINI should only be placed in 1_*_action. (* single, double, hold)
+        
+        * The BOTH CLICK action of Aqara T1 should be placed in 3_*_action. (* single, double, hold)
+
+
+      For debugging note;
+      
+        * If you want to know the details about the button action states, go to "/config/blueprints/automation/kkqq9320/various_zigbee_wireless_switch.yaml"
+
+    #Working trigger Actions backup
+      # Tuya(TS0044)
+      # 1_single
+      # 1_double
+      # 1_hold
+      
+      # Sihas 
+      # 1_single
+      # 1_double
+      # 1_long
+      
+      # Aqara mini
+      # single
+      # double
+      # hold
+      
+      # Aqara double rocker
+      # button_1_single
+      # button_1_double
+      # button_1_hold
+
+  domain: automation
+  input:
+    action_sensor:
+      name: Action Sensor
+      description: Zigbee2mqtt action sensor
+      selector:
+        entity:
+          integration: mqtt
+          domain:
+          - sensor
+          multiple: false
+    1_single_action:
+      name: 1st Single
+      description: Any Button, (*Mini Sholud be here)
+      default: []
+      selector:
+        action: {}
+    1_double_action:
+      name: 1st Double
+      description: Any Button, (*Mini Sholud be here)
+      default: []
+      selector:
+        action: {}
+    1_hold_action:
+      name: 1st Hold
+      description: Any Button, (*Mini Sholud be here)
+      default: []
+      selector:
+        action: {}
+
+    2_single_action:
+      name: 2nd Single
+      description: Tuya, T1, Sihas
+      default: []
+      selector:
+        action: {}
+    2_double_action:
+      name: 2nd Double
+      description: Tuya, T1, Sihas
+      default: []
+      selector:
+        action: {}
+    2_hold_action:
+      name: 2nd Hold
+      description: Tuya, T1, Sihas
+      default: []
+      selector:
+        action: {}
+
+    3_single_action:
+      name: 3rd Single
+      description: Tuya, T1, Sihas (*T1's Both action Sholud be here)
+      default: []
+      selector:
+        action: {}
+    3_double_action:
+      name: 3rd Double
+      description: Tuya, T1, Sihas (*T1's Both action Sholud be here)
+      default: []
+      selector:
+        action: {}
+    3_hold_action:
+      name: 3rd Hold
+      description: Tuya, T1, Sihas (*T1's Both action Sholud be here)
+      default: []
+      selector:
+        action: {}
+
+    4_single_action:
+      name: 4th Single
+      description: Tuya, Sihas
+      default: []
+      selector:
+        action: {}
+    4_double_action:
+      name: 4th Double
+      description: Tuya, Sihas
+      default: []
+      selector:
+        action: {}
+    4_hold_action:
+      name: 4th Hold
+      description: Tuya, Sihas
+      default: []
+      selector:
+        action: {}
+mode: parallel
+max: 100
+max_exceeded: silent
+############################################################
+trigger:
+  platform: state
+  entity_id: !input action_sensor
+############################################################
+action:
+- variables:
+    action: '{{ trigger.to_state.state }}'
+- choose:
+  - conditions: "{{ action in ['1_single', 'single', 'button_1_single'] }}"
+    sequence: !input 1_single_action
+  - conditions: "{{ action in ['1_double', 'double', 'button_1_double'] }}"
+    sequence: !input 1_double_action
+  - conditions: "{{ action in ['1_hold', '1_long', 'hold', 'button_1_hold'] }}"
+    sequence: !input 1_hold_action
+
+  - conditions: "{{ action in ['2_single', 'button_2_single'] }}"
+    sequence: !input 2_single_action
+  - conditions: "{{ action in ['2_double', 'button_2_double'] }}"
+    sequence: !input 2_double_action
+  - conditions: "{{ action in ['2_hold', '2_long', 'button_2_hold'] }}"
+    sequence: !input 2_hold_action
+
+  - conditions: "{{ action in ['3_single', 'button_3_single'] }}"
+    sequence: !input 3_single_action
+  - conditions: "{{ action in ['3_double', 'button_3_double'] }}"
+    sequence: !input 3_double_action
+  - conditions: "{{ action in ['3_hold', '3_long', 'button_3_hold'] }}"
+    sequence: !input 3_hold_action
+
+  - conditions: "{{ action in ['4_single', 'button_4_single'] }}"
+    sequence: !input 4_single_action
+  - conditions: "{{ action in ['4_double', 'button_4_double'] }}"
+    sequence: !input 4_double_action
+  - conditions: "{{ action in ['4_hold', '4_long'] }}"
+    sequence: !input 4_hold_action
+
