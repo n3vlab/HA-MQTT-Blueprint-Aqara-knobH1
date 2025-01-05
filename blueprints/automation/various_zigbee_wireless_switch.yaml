@@ -1,40 +1,51 @@
 blueprint:
-
+##############################################################
   name: Various Zigbee Wireless Switch
-  description:
-    Supported Device - (confirmed working)
+  description: >-
+    ## Supported Device - (confirmed working)
     
-      Tuya - [TS0044](https://www.zigbee2mqtt.io/devices/TS0044.html)
+      Tuya 
+        - [TS0044](https://www.zigbee2mqtt.io/devices/TS0044.html)
 
-      Sihas - Wireless 4gang - [SBM300ZC4](https://www.zigbee2mqtt.io/devices/SBM300ZC4.html#shinasystem-sbm300zc4)
+      Sihas 
+        - [SBM300ZC4](https://www.zigbee2mqtt.io/devices/SBM300ZC4.html#shinasystem-sbm300zc4) - Wireless 4gang
       
-      Aqara - Wireless remote switch T1 (double rocker) - [WXKG04LM](https://www.zigbee2mqtt.io/devices/WXKG04LM.html#aqara-wxkg04lm)
-      / Wireless mini switch t1 - [WXKG13LM](https://www.zigbee2mqtt.io/devices/WXKG13LM.html#aqara-wxkg13lm)
+      Aqara
+        - [WXKG04LM](https://www.zigbee2mqtt.io/devices/WXKG04LM.html#aqara-wxkg04lm) - Wireless remote switch T1 (double rocker)
+        - [WXKG13LM](https://www.zigbee2mqtt.io/devices/WXKG13LM.html#aqara-wxkg13lm) - Wireless mini switch T1
           
-    
-      User Manual
+    ## Prerequisites
+        Ensure all wireless switches are connected to `Zigbee2MQTT`
+        
+    ## User Manual
       
-      1. Ensure all wireless switches are connected to zigbee2mqtt.
+      1. If you haven’t changed the topic in Zigbee2MQTT, you don’t need to modify the base topic.
+        Leave it as the `default` value.
       
-      2. Select the sensor with the entity ID = sensor.[THE NAME OF THE DEVICE YOU PAIRED]_action; from the dropdown for your desired switch device.
-      
+      2. Type the `FRIENDLY NAME` of the wireless switch you want to control into the device input.
+        2-1. Dropdown selection is not available; manual typing is required.
+        2-2. It must be the `Friendly Name`, not the Entity ID!
+        2-3. It’s not certain, but it’s recommended to change the friendly name in Zigbee2MQTT and use that value. 
+          If you’ve arbitrarily changed the friendly name in the Home Assistant UI, it might not work as expected
+
       3. Create automation actions. Done!
       
 
-       NOTE!
+       # NOTE!
        
         * The RELEASE action of all buttons DOES NOT WORK
         
-        * The actions of AQARA MINI should only be placed in 1_*_action. (* single, double, hold)
+        * The actions of AQARA MINI should only be placed in 1_*_action. (* = single, double, hold)
         
-        * The BOTH CLICK action of Aqara T1 should be placed in 3_*_action. (* single, double, hold)
+        * The BOTH CLICK action of Aqara T1 should be placed in 3_*_action. (* = single, double, hold)
 
 
-      For debugging note;
+      ### For debugging note;
       
         * If you want to know the details about the button action states, go to "/config/blueprints/automation/kkqq9320/various_zigbee_wireless_switch.yaml"
 
-    #Working trigger Actions backup
+    <!--
+    # Working trigger actions payload (work as {{ action }})
       # Tuya(TS0044)
       # 1_single
       # 1_double
@@ -54,18 +65,26 @@ blueprint:
       # button_1_single
       # button_1_double
       # button_1_hold
+    -->
 
   domain: automation
   input:
-    action_sensor:
-      name: Action Sensor
-      description: Zigbee2mqtt action sensor
+  
+    base_topic:
+      name: Base Topic
+      description: >-
+        The base topic configured in Zigbee2MQTT. 
+        <br>If you haven't changed this, leave the default here `Zigbee2MQTT`
+      default: zigbee2mqtt
+
+    device:
+      name: Device
+      description: >-
+        The `FRIENDLY NAME` of the Zigbee device you want to control.
+        <br>(as set in `Zigbee2MQTT web UI`; `NOT` entity id`).
       selector:
-        entity:
-          integration: mqtt
-          domain:
-          - sensor
-          multiple: false
+        text:
+
     1_single_action:
       name: 1st Single
       description: Any Button, (*Mini Sholud be here)
@@ -141,17 +160,22 @@ blueprint:
       default: []
       selector:
         action: {}
+
 mode: parallel
 max: 100
 max_exceeded: silent
 ############################################################
+trigger_variables:
+  base_topic: !input base_topic
+  target: !input device
+############################
 trigger:
-  platform: state
-  entity_id: !input action_sensor
+  trigger: mqtt
+  topic: '{{ base_topic }}/{{ target }}/action'
 ############################################################
 action:
 - variables:
-    action: '{{ trigger.to_state.state }}'
+    action: "{{ trigger.payload }}"
 - choose:
   - conditions: "{{ action in ['1_single', 'single', 'button_1_single'] }}"
     sequence: !input 1_single_action
