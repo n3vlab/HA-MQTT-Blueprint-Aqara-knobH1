@@ -13,7 +13,9 @@ blueprint:
       Aqara
         - [WXKG04LM](https://www.zigbee2mqtt.io/devices/WXKG04LM.html#aqara-wxkg04lm) - Wireless remote switch T1 (double rocker)
         - [WXKG13LM](https://www.zigbee2mqtt.io/devices/WXKG13LM.html#aqara-wxkg13lm) - Wireless mini switch T1
-          
+      iKea
+        - [E2001/E2002](https://www.zigbee2mqtt.io/devices/E2001_E2002.html) - STYRBAR remote control
+
     ## Prerequisites
         Ensure all wireless switches are connected to `Zigbee2MQTT`
         
@@ -39,32 +41,39 @@ blueprint:
         
         * The BOTH CLICK action of Aqara T1 should be placed in 3_*_action. (* = single, double, hold)
 
+        * If you’re unsure where to place the button’s action, please refer to my [GitHub README](https://github.com/kkqq9320/homeassistant/blob/main/README.md).
+
 
       ### For debugging note;
       
         * If you want to know the details about the button action states, go to "/config/blueprints/automation/kkqq9320/various_zigbee_wireless_switch.yaml"
 
     <!--
-    # Working trigger actions payload (work as {{ action }})
+    # Working trigger actions payload (work as {{ action }}) + except `release` action
       # Tuya(TS0044)
-      # 1_single
-      # 1_double
-      # 1_hold
+      # x = 1,2,3,4
+      # x_single
+      # x_double
+      # x_hold
       
       # Sihas 
-      # 1_single
-      # 1_double
-      # 1_long
+      # x = 1,2,3,4
+      # x_single
+      # x_double
+      # x_long
       
       # Aqara mini
       # single
       # double
       # hold
+      ## release
       
       # Aqara double rocker
-      # button_1_single
-      # button_1_double
-      # button_1_hold
+      # x = 1,2,3
+      # button_x_single
+      # button_x_double
+      # button_x_hold
+      ## button_x_release
     -->
 
   domain: automation
@@ -177,31 +186,31 @@ action:
 - variables:
     action: "{{ trigger.payload }}"
 - choose:
-  - conditions: "{{ action in ['1_single', 'single', 'button_1_single'] }}"
+  - conditions: "{{ action in ['on', 'single', '1_single',  'button_1_single'] }}"
     sequence: !input 1_single_action
-  - conditions: "{{ action in ['1_double', 'double', 'button_1_double'] }}"
+  - conditions: "{{ action in ['double', '1_double',  'button_1_double'] }}"
     sequence: !input 1_double_action
-  - conditions: "{{ action in ['1_hold', '1_long', 'hold', 'button_1_hold'] }}"
+  - conditions: "{{ action in ['brightness_move_up', 'hold', '1_hold', '1_long',  'button_1_hold'] }}"
     sequence: !input 1_hold_action
 
-  - conditions: "{{ action in ['2_single', 'button_2_single'] }}"
+  - conditions: "{{ action in ['arrow_right_click', '2_single', 'button_2_single'] }}"
     sequence: !input 2_single_action
   - conditions: "{{ action in ['2_double', 'button_2_double'] }}"
     sequence: !input 2_double_action
-  - conditions: "{{ action in ['2_hold', '2_long', 'button_2_hold'] }}"
+  - conditions: "{{ action in ['arrow_right_hold', '2_hold', '2_long', 'button_2_hold'] }}"
     sequence: !input 2_hold_action
 
-  - conditions: "{{ action in ['3_single', 'button_3_single'] }}"
+  - conditions: "{{ action in ['off', '3_single', 'button_3_single'] }}"
     sequence: !input 3_single_action
   - conditions: "{{ action in ['3_double', 'button_3_double'] }}"
     sequence: !input 3_double_action
-  - conditions: "{{ action in ['3_hold', '3_long', 'button_3_hold'] }}"
+  - conditions: "{{ action in ['brightness_move_down', '3_hold', '3_long', 'button_3_hold'] }}"
     sequence: !input 3_hold_action
 
-  - conditions: "{{ action in ['4_single', 'button_4_single'] }}"
+  - conditions: "{{ action in ['arrow_left_click', '4_single', 'button_4_single'] }}"
     sequence: !input 4_single_action
   - conditions: "{{ action in ['4_double', 'button_4_double'] }}"
     sequence: !input 4_double_action
-  - conditions: "{{ action in ['4_hold', '4_long'] }}"
+  - conditions: "{{ action in ['arrow_left_hold', '4_hold', '4_long'] }}"
     sequence: !input 4_hold_action
 
