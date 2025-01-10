@@ -34,14 +34,14 @@ blueprint:
       
 
        # NOTE!
-       
+       ## If you’re unsure where to place the button’s action, please refer to my [GitHub README](https://github.com/kkqq9320/homeassistant/blob/main/README.md).
+
+
         * The RELEASE action of all buttons DOES NOT WORK
         
         * The actions of AQARA MINI should only be placed in 1_*_action. (* = single, double, hold)
         
         * The BOTH CLICK action of Aqara T1 should be placed in 3_*_action. (* = single, double, hold)
-
-If you’re unsure where to place the button’s action, please refer to my [GitHub README](https://github.com/kkqq9320/homeassistant/blob/main/README.md).
 
 
       ### For debugging note;
