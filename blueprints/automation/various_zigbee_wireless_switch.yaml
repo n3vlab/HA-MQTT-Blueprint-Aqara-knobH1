@@ -4,17 +4,21 @@ blueprint:
   description: >-
     ## Supported Device - (confirmed working)
     
-      Tuya 
+      [Tuya](https://www.zigbee2mqtt.io/supported-devices/#v=Tuya)
         - [TS0044](https://www.zigbee2mqtt.io/devices/TS0044.html)
 
-      Sihas 
+      [ShinaSystem](https://www.zigbee2mqtt.io/supported-devices/#v=ShinaSystem)
         - [SBM300ZC4](https://www.zigbee2mqtt.io/devices/SBM300ZC4.html#shinasystem-sbm300zc4) - Wireless 4gang
       
-      Aqara
+      [Aqara](https://www.zigbee2mqtt.io/supported-devices/#v=Aqara)
         - [WXKG04LM](https://www.zigbee2mqtt.io/devices/WXKG04LM.html#aqara-wxkg04lm) - Wireless remote switch T1 (double rocker)
         - [WXKG13LM](https://www.zigbee2mqtt.io/devices/WXKG13LM.html#aqara-wxkg13lm) - Wireless mini switch T1
-      iKea
+        
+      [iKea](https://www.zigbee2mqtt.io/supported-devices/#v=IKEA)
         - [E2001/E2002](https://www.zigbee2mqtt.io/devices/E2001_E2002.html) - STYRBAR remote control
+        
+      [Loginovo](https://www.zigbee2mqtt.io/supported-devices/#v=Loginovo)
+        - [ZG-101Z](https://www.zigbee2mqtt.io/devices/ZG-101Z.html) - SOS button
 
     ## Prerequisites
         Ensure all wireless switches are connected to `Zigbee2MQTT`
@@ -36,7 +40,8 @@ blueprint:
        # NOTE!
        If you’re unsure where to place the button’s action, please refer to my [GitHub README](https://github.com/kkqq9320/homeassistant/blob/main/README.md)
 
-        - The RELEASE action of all buttons DOES NOT WORK
+        - The RELEASE action of all buttons DOES NOT WORK 
+          <br>(Because I think the action that should occur when a `release` happens should be triggered by the `hold` event and continue to operate until the `release` occurs.)
         
         - The actions of AQARA MINI should only be placed in 1_*_action. (* = single, double, hold)
         
@@ -95,19 +100,19 @@ blueprint:
 
     1_single_action:
       name: 1st Single
-      description: Any Button, (*Mini Sholud be here)
+      description: Any Button, (*Switch with a single push button)
       default: []
       selector:
         action: {}
     1_double_action:
       name: 1st Double
-      description: Any Button, (*Mini Sholud be here)
+      description: Any Button, (*Switch with a single push button)
       default: []
       selector:
         action: {}
     1_hold_action:
       name: 1st Hold
-      description: Any Button, (*Mini Sholud be here)
+      description: Any Button, (*Switch with a single push button)
       default: []
       selector:
         action: {}
@@ -185,11 +190,11 @@ action:
 - variables:
     action: "{{ trigger.payload }}"
 - choose:
-  - conditions: "{{ action in ['on', 'single', '1_single',  'button_1_single'] }}"
+  - conditions: "{{ action in ['on', 'single', '1_single',  'button_1_single', 'sos'] }}"
     sequence: !input 1_single_action
   - conditions: "{{ action in ['double', '1_double',  'button_1_double'] }}"
     sequence: !input 1_double_action
-  - conditions: "{{ action in ['brightness_move_up', 'hold', '1_hold', '1_long',  'button_1_hold'] }}"
+  - conditions: "{{ action in ['brightness_move_up', 'hold', '1_hold', '1_long',  'button_1_hold', 'emergency'] }}"
     sequence: !input 1_hold_action
 
   - conditions: "{{ action in ['arrow_right_click', '2_single', 'button_2_single'] }}"
