@@ -69,3 +69,10 @@
     <td style="border: 3px solid black; width: 50px; height: 50px;"></td>
   </tr>
 </table>
+
+`Loginovo ZG-101Z`
+<table style="border-collapse: collapse; text-align: center; margin: auto;">
+  <tr>
+    <td style="border: 2px solid black; width: 100px; height: 100px;">1</td>
+  </tr>
+</table>
