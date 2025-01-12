@@ -41,7 +41,7 @@ blueprint:
        If you’re unsure where to place the button’s action, please refer to my [GitHub README](https://github.com/kkqq9320/homeassistant/blob/main/README.md)
 
         - The RELEASE action of all buttons DOES NOT WORK 
-          <br>(Because I think the action that should occur when a `release` happens should be triggered by the `hold` event and continue to operate until the `release` occurs.)
+          (Because I think the action that should occur when a `release` happens should be triggered by the `hold` event and continue to operate until the `release` occurs.)
         
         - The actions of AQARA MINI should only be placed in 1_*_action. (* = single, double, hold)
         
