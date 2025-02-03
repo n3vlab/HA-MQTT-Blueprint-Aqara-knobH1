@@ -1,7 +1,7 @@
 # Blueprint
 ## various_zigbee_wireless_switch.yaml
 ### The action number that needs to be placed according to the button’s shape.
-
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fkkqq9320%2Fhomeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fvarious_zigbee_wireless_switch.yaml)
 
 `Tuya TS0044`
 <table style="table-layout: fixed; border-collapse: collapse; text-align: center;">
@@ -76,3 +76,10 @@
     <td style="border: 2px solid black; width: 100px; height: 100px;">1</td>
   </tr>
 </table>
+
+
+## z2m_aqara_knob_h1_light_control.yaml
+For detailed explanations, please visit the [Home Assistant Forum](https://community.home-assistant.io/t/z2m-aqara-rotary-knob-h1-adjustable-brightness-color-temperature-z2m/841036)
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fkkqq9320%2Fhomeassistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fz2m_aqara_knob_h1_light_control.yaml)
+
