@@ -74,13 +74,14 @@ blueprint:
         text: {}
         
 
-    translate_korean:
-      name: Translate to Korean
+    translate_friendly_name:
+      name: Translate Friendly_name
       description: 만약 `FRIENDLY NAME`이 한글이라면, 여기에 센서 이름을 영어로 적으세요.
         <br> (example; 안방 노브 = anbang_nobeu)
         <br> 공백은 언더바(_)로 치환해주세요.
         <br> !!! 한글로 적지 마세요 !!!
         <br> If you are not Korean, leave this field blank.
+        <br> Even if you are not Korean, enter values here if the sensor `entity_id` are different from the English default.
       selector:
         text: {}
 
@@ -217,7 +218,7 @@ trace:
 trigger_variables:
   base_topic: !input base_topic
   knob: !input knob
-  translate_korean: !input translate_korean
+  translate_friendly_name: !input translate_friendly_name
 trigger:
   trigger: mqtt
   topic: '{{ base_topic }}/{{ knob }}/action'
@@ -225,8 +226,8 @@ action:
   - variables:
       ACTION: '{{ trigger.payload }}'
       DEVICE_LOWER: >
-        {% if translate_korean %}
-          {{ translate_korean | lower | regex_replace('[ .,@^-]', '_') }}
+        {% if translate_friendly_name %}
+          {{ translate_friendly_name | lower | regex_replace('[ .,@^-]', '_') }}
         {% else %}
           {{ knob | lower | regex_replace('[ .,@^-]', '_') }}
         {% endif %}
