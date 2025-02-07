@@ -6,6 +6,7 @@ blueprint:
       - Supports Zigbee2MQTT versions, including 2.0.0 and later updates. (It is expected to work on lower versions as well.)
 
     ## Prerequisites
+      - Requires at least **Home Assistant Core `2024.08`** version.
       - The knob only works when connected via `Zigbee2MQTT`.
       - The operation mode of the knob must be set to `event`. It is unknown whether it works in `command` mode.
       
