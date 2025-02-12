@@ -37,6 +37,8 @@ blueprint:
       - You can adjust the amount of color temperature change per tick of the knob.
       
       - You can adjust the brightness percentage change per tick of the knob.
+      
+      - Added functionality to set the starting color temperature via the `Default Color Temp Setting` when adjusting the light's color temperature by pressing and turning the light (instead of using the color temperature mode). The default value is set to `4000k`
 
       - You can set the minimum and maximum color temperature values to limit the physically adjustable range. If you don’t want any restrictions, you can ignore this setting.
 
@@ -89,10 +91,11 @@ blueprint:
     target_light:
       name: Target Light
       description: Select the light entity to control brightness and color temperature.
-        <br>- When you set up to control more than one light, the `brightness` of the lights will not be synchronized.
-        <br>- If you want to control multiple lights or just the ones that are `ON`, you can set it up like this (NOT recommended due to popcorning)
-        <br>  `1. light.a, light.b` 
-        <br>  `2. {{ expand('light.a','light.b') | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}`
+        # <br>- When you set up to control more than one light, the `brightness` of the lights will not be synchronized.
+        # <br>- If you want to control multiple lights or just the ones that are `ON`, you can set it up like this (NOT recommended due to popcorning)
+        # <br>  `1. light.a, light.b` 
+        # <br>  `2. {{ expand('light.a','light.b') | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}`
+        # <br> Color temperature control does not work with press rotation when setting up multiple lights
       selector:
         template: {}
 
@@ -107,6 +110,20 @@ blueprint:
       default: false
       selector:
         boolean:
+
+    color_temp_base:
+      name: Default Color Temp setting
+      description: If the `TARGET LIGHT` is operating in a mode other than Color Temp (e.g., RGB, HS, etc.), 
+        <br>this setting determines the starting color temperature (within 1000K - 10000K) when pressing and turning the knob.
+        <br>The selected value must not be higher than the `TARGET LIGHT`'s `min_color_temp` or lower than `max_color_temp`
+      default: 4000
+      selector:
+        number:
+          min: 1000
+          max: 10000
+          unit_of_measurement: "K"
+
+
 
 ##### Press Action
     press_action:
@@ -171,19 +188,6 @@ blueprint:
               step: 1
               unit_of_measurement: /2 = %
               mode: slider
-
-        color_temp_base:
-          name: Default Color Temp setting
-          description: If the `TARGET LIGHT` is operating in a mode other than Color Temp (e.g., RGB, HS, etc.), 
-            <br>this setting determines the starting color temperature (within 1000K - 10000K) when pressing and turning the knob.
-            <br>The selected value must not be higher than the `TARGET LIGHT`'s `min_color_temp` or lower than `max_color_temp`
-          default: 4000
-          selector:
-            number:
-              min: 1000
-              max: 10000
-              unit_of_measurement: "K"
-
 
         color_temp_stepsize:
           name: Color Temp Stepsize
