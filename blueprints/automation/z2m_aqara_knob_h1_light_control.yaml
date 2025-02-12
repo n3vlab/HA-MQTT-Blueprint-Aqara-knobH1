@@ -76,20 +76,23 @@ blueprint:
         
 
     translate_friendly_name:
-      name: Translate Friendly_name
+      name: Translate Friendly Name
       description: 만약 `FRIENDLY NAME`이 한글이라면, 여기에 센서 이름을 영어로 적으세요.
         <br> (example; 안방 노브 = anbang_nobeu)
         <br> 공백은 언더바(_)로 치환해주세요.
         <br> !!! 한글로 적지 마세요 !!!
         <br> If you are not Korean, leave this field blank.
         <br> Even if you are not Korean, enter values here if the sensor `entity_id` are different from the English default.
-      selector:
-        text: {}
+      default: ""
 
 
     target_light:
       name: Target Light
       description: Select the light entity to control brightness and color temperature.
+        <br>- When you set up to control more than one light, the `brightness` of the lights will not be synchronized.
+        <br>- If you want to control multiple lights or just the ones that are `ON`, you can set it up like this (NOT recommended due to popcorning)
+        <br>  `1. light.a, light.b` 
+        <br>  `2. {{ expand('light.a','light.b') | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}`
       selector:
         template: {}
 
@@ -169,6 +172,19 @@ blueprint:
               unit_of_measurement: /2 = %
               mode: slider
 
+        color_temp_base:
+          name: Default Color Temp setting
+          description: If the `TARGET LIGHT` is operating in a mode other than Color Temp (e.g., RGB, HS, etc.), 
+            <br>this setting determines the starting color temperature (within 1000K - 10000K) when pressing and turning the knob.
+            <br>The selected value must not be higher than the `TARGET LIGHT`'s `min_color_temp` or lower than `max_color_temp`
+          default: 4000
+          selector:
+            number:
+              min: 1000
+              max: 10000
+              unit_of_measurement: "K"
+
+
         color_temp_stepsize:
           name: Color Temp Stepsize
           description: Set the step size for adjusting the color temperature when turning the knob while pressing it.
@@ -227,7 +243,7 @@ action:
   - variables:
       ACTION: '{{ trigger.payload }}'
       DEVICE_LOWER: >
-        {% if translate_friendly_name %}
+        {% if translate_friendly_name != "" %}
           {{ translate_friendly_name | lower | regex_replace('[ .,@^-]', '_') }}
         {% else %}
           {{ knob | lower | regex_replace('[ .,@^-]', '_') }}
@@ -247,6 +263,7 @@ action:
       STATES_BRIGHT_SIZE: "{{ ((states(SENSOR_BRIGHT_SIZE) | float(1) / 3) * BRIGHTNESS_STEPSIZE * 2.54) | round(0) }}"
       STATES_TEMP_SIZE: "{{ states(SENSOR_TEMP_SIZE) | float(0) * TEMP_STEPSIZE }}"
 
+      TEMP_BASE: !input color_temp_base
       TEMP_MIN: !input color_temp_min
       TEMP_MAX: !input color_temp_max
 
@@ -300,14 +317,19 @@ action:
                                   transition: "{{ TRANSITION_TIME }}"
                             else:
                               - variables:
-                                  CURRENT_TEMP: "{{ state_attr(TARGET_LIGHT, 'color_temp_kelvin') | int }}"
+                                  COLOR_TEMP_MIN: "{{ max(TEMP_MIN, state_attr(TARGET_LIGHT, 'min_color_temp_kelvin')) }}"
+                                  COLOR_TEMP_MAX: "{{ min(TEMP_MAX, state_attr(TARGET_LIGHT, 'max_color_temp_kelvin')) }}"
+                                  SAFE_TEMP_BASE: "{{ min(COLOR_TEMP_MAX, max(COLOR_TEMP_MIN, TEMP_BASE | int)) }}"
+                                  CURRENT_TEMP: >-
+                                    {% if state_attr(TARGET_LIGHT, 'color_temp_kelvin') is not none %}
+                                      {{ state_attr(TARGET_LIGHT, 'color_temp_kelvin') | int }}
+                                    {% else %}
+                                      {{ SAFE_TEMP_BASE }}
+                                    {% endif %}
+                              
                               - action: light.turn_on
                                 target:
                                   entity_id: "{{ TARGET_LIGHT }}"
                                 data:
                                   transition: "{{ TRANSITION_TIME }}"
-                                  kelvin: >-
-                                    {% set COLOR_TEMP_MIN = max(TEMP_MIN, state_attr(TARGET_LIGHT, 'min_color_temp_kelvin')) %} 
-                                    {% set COLOR_TEMP_MAX = min(TEMP_MAX, state_attr(TARGET_LIGHT, 'max_color_temp_kelvin')) %}
-
-                                    {{ min(COLOR_TEMP_MAX, max(COLOR_TEMP_MIN, CURRENT_TEMP + STATES_TEMP_SIZE)) }}
+                                  kelvin: "{{ min(COLOR_TEMP_MAX, max(COLOR_TEMP_MIN, CURRENT_TEMP + STATES_TEMP_SIZE)) }}"
