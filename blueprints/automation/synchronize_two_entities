@@ -22,12 +22,25 @@ blueprint:
     entity_a:
       name: Entity A
       selector:
-        entity:
+        entity: {}
     entity_b:
       name: Entity B
       selector:
-        entity:
+        entity: {}
+    stop_cover:
+      name: Cover Stop
+      description: >
+        If enabled(default:false), toggling the switch while the `cover` is `opening` or `closing` will stop it via `cover.stop_cover`
+        <br>The cover must support the `opening` and `closing` states for this to work.
+        <br>If you're not going to use a `cover` in the synchronization, never mind.
 
+        <br>옵션을 켠다면, (기본:꺼짐) 커튼이 열리는중`(opening)` 혹은 닫히는중`(closing)` 일때,
+        <br>한번 더 스위치를 토글하면 커튼이 `cover.stop_cover` 액션으로 인해 멈춥니다.
+        <br>커튼이 `opening`과 `closing`을 지원해야 합니다.
+        <br>동기화에 `cover`를 사용하지 않는다면 신경 쓰지 않아도 됩니다.
+      selector:
+        boolean: {}
+      default: false
 ####################
 mode: queued
 max: 20
@@ -54,36 +67,41 @@ trigger:
 
 action:
 - variables:
+    STOP_COVER: !input stop_cover
     STATE_MAP:
       open: 'on'
       closed: 'off'
-      opening: 'on'
-      closing: 'off'
-    COVER_MAP:
-      open: close
-      closed: open
-      opening: close
-      closing: open
-
+      opening: "{{ 'stop' if STOP_COVER else 'on' }}"
+      closing: "{{ 'stop' if STOP_COVER else 'off' }}"
+    ACTION_MAP:
+      open: 'on'
+      'on': 'open'
+      closed: 'off'
+      'off': 'close'
     ENTITY_A: !input entity_a
     ENTITY_B: !input entity_b
-    TRIGGER_ENTITY: "{{ trigger.entity_id }}"
-    CONTROL_ENTITY: "{{ ENTITY_B if TRIGGER_ENTITY == ENTITY_A else ENTITY_A }}"
-    DOMAIN_CONTROL: "{{ CONTROL_ENTITY.split('.')[0] }}"
+    TRIGGER_ENTITY: '{{ trigger.entity_id }}'
+    TARGET_ENTITY: '{{ ENTITY_B if TRIGGER_ENTITY == ENTITY_A else ENTITY_A }}'
+    TARGET_DOMAIN: '{{ TARGET_ENTITY.split(''.'')[0] }}'
+    TO_STATE: '{{ trigger.to_state.state }}'
 
-    TO_STATE: "{{ trigger.to_state.state }}"
+    TARGET_STATE: "{{ STATE_MAP.get(states(TARGET_ENTITY), states(TARGET_ENTITY)) }}"
+    ACTION_STATE: "{{ ACTION_MAP.get(TO_STATE, TO_STATE) }}"
 
 - choose:
-    - conditions:
-        - condition: template
-          value_template: >-
-            {{ STATE_MAP.get(TO_STATE, TO_STATE) != STATE_MAP.get(states(CONTROL_ENTITY), states(CONTROL_ENTITY)) }}
-      sequence:
-        - action: >
-            {% if DOMAIN_CONTROL == 'cover' %}
-              cover.{{ COVER_MAP.get(states(CONTROL_ENTITY), states(CONTROL_ENTITY)) }}_cover
-            {% else %}
-              homeassistant.turn_{{ TO_STATE }}
-            {% endif %}
-          target:
-            entity_id: "{{ CONTROL_ENTITY }}"
+  - conditions:
+    - condition: template
+      value_template: '{{ STATE_MAP.get(TO_STATE, TO_STATE) != TARGET_STATE }}'
+    sequence:
+    - action: |
+        {% if TARGET_DOMAIN == 'cover' %}
+          {% if TARGET_STATE == 'stop' %}
+            cover.stop_cover
+          {% else %}
+            cover.{{ ACTION_STATE }}_cover
+          {% endif %}
+        {% else %}
+          homeassistant.turn_{{ ACTION_STATE }}
+        {% endif %}
+      target:
+        entity_id: '{{ TARGET_ENTITY }}'
