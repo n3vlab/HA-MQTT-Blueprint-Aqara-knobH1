@@ -39,7 +39,7 @@ trace:
 trigger:
 - trigger: state
   entity_id: !input entity_a
-  not_form: &not_from
+  not_from: &not_from
     - unavailable
     - unknown
   to: &to_state
@@ -49,7 +49,7 @@ trigger:
     - 'closed'
 - trigger: state
   entity_id: !input entity_b
-  not_form: *not_from
+  not_from: *not_from
   to: *to_state
 
 action:
