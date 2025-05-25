@@ -1,0 +1,87 @@
+blueprint:
+  name: Synchronize two entities
+  description: |-
+    ### Prerequisites: 
+      - Requires at least Home Assistant Core `2024.08` version
+
+    ### Supported entities: 
+      - All entities that can be controlled using `homeassistant.turn_on/turn_off`
+        - e.g. (`light`, `switch`, `automation`, `input_boolean`, `fan`, `group`, `climate`,  ....etc)
+      - `cover`
+
+    ### 사용조건
+      - HA Core `2024.08` 이상이 필요합니다.
+
+    ### 지원하는 엔티티
+      - `homeassistant.turn_on/off`로 조작가능한 모든 엔티티가 가능합니다.
+          - 예시 (`light`, `switch`, `automation`, `input_boolean`, `fan`, `group`, `climate`,  ....etc)
+      - `cover`
+
+  domain: automation
+  input:
+    entity_a:
+      name: Entity A
+      selector:
+        entity:
+    entity_b:
+      name: Entity B
+      selector:
+        entity:
+
+####################
+mode: queued
+max: 20
+max_exceeded: silent
+trace:
+  stored_traces: 20
+####################
+
+trigger:
+- trigger: state
+  entity_id: !input entity_a
+  not_form: &not_from
+    - unavailable
+    - unknown
+  to: &to_state
+    - 'on'
+    - 'off'
+    - 'open'
+    - 'closed'
+- trigger: state
+  entity_id: !input entity_b
+  not_form: *not_from
+  to: *to_state
+
+action:
+- variables:
+    STATE_MAP:
+      open: 'on'
+      closed: 'off'
+    COVER_MAP:
+      open: 'close'
+      closed: 'open'
+    ENTITY_A: !input entity_a
+    ENTITY_B: !input entity_b
+
+    TRIGGER_ENTITY: "{{ trigger.entity_id }}"
+    CONTROL_ENTITY: "{{ ENTITY_B if TRIGGER_ENTITY == ENTITY_A else ENTITY_A }}"
+
+    DOMAIN_CONTROL: "{{ CONTROL_ENTITY.split('.')[0] }}"
+
+    TO_STATE: "{{ trigger.to_state.state }}"
+
+- choose:
+    - conditions:
+        - condition: template
+          value_template: >-
+            {{ STATE_MAP.get(TO_STATE, TO_STATE) != STATE_MAP.get(states(CONTROL_ENTITY), states(CONTROL_ENTITY)) }}
+
+      sequence:
+        - action: >
+            {% if DOMAIN_CONTROL == 'cover' %}
+              cover.{{ COVER_MAP.get(states(CONTROL_ENTITY), states(CONTROL_ENTITY)) }}_cover
+            {% else %}
+              homeassistant.turn_{{ TO_STATE }}
+            {% endif %}
+          target:
+            entity_id: "{{ CONTROL_ENTITY }}"
