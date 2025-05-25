@@ -57,15 +57,18 @@ action:
     STATE_MAP:
       open: 'on'
       closed: 'off'
+      opening: 'on'
+      closing: 'off'
     COVER_MAP:
-      open: 'close'
-      closed: 'open'
+      open: close
+      closed: open
+      opening: close
+      closing: open
+
     ENTITY_A: !input entity_a
     ENTITY_B: !input entity_b
-
     TRIGGER_ENTITY: "{{ trigger.entity_id }}"
     CONTROL_ENTITY: "{{ ENTITY_B if TRIGGER_ENTITY == ENTITY_A else ENTITY_A }}"
-
     DOMAIN_CONTROL: "{{ CONTROL_ENTITY.split('.')[0] }}"
 
     TO_STATE: "{{ trigger.to_state.state }}"
@@ -75,7 +78,6 @@ action:
         - condition: template
           value_template: >-
             {{ STATE_MAP.get(TO_STATE, TO_STATE) != STATE_MAP.get(states(CONTROL_ENTITY), states(CONTROL_ENTITY)) }}
-
       sequence:
         - action: >
             {% if DOMAIN_CONTROL == 'cover' %}
